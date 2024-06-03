@@ -8,6 +8,7 @@ import com.example.bankingsystem.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,5 +46,43 @@ public class CustomerServiceImpl implements CustomerService {
     public String createCustomer(CustomerDto customer) {
         customerRepository.save(detailedCustomerToCustomerDto(customer));
         return "Customer has been saved";
+    }
+
+    @Override
+    public List<CustomerDto> getAllCustomers() {
+        return customerRepository.findAll().stream()
+                .map(c -> customerToCustomerDto(c)).toList();
+    }
+
+    @Override
+    public CustomerDto getCustomerById(Long id) {
+        Customer customer = customerRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer doesnt exist"));
+        return customerToCustomerDto(customer);
+    }
+
+    @Override
+    public void deleteCustomer(Long id) {
+        Customer customer = customerRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer doesnt exist"));
+        customerRepository.deleteById(id);
+    }
+
+    @Override
+    public CustomerDto updateCustomer(Long id, CustomerDto customerDto) {
+        Customer existingCustomer = customerRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer doesnt exist"));
+
+        existingCustomer.setName(customerDto.getName());
+        existingCustomer.setAddress(customerDto.getAddress());
+        existingCustomer.setPhone(customerDto.getPhone());
+        existingCustomer.setEmail(customerDto.getEmail());
+
+        customerRepository.save(existingCustomer);
+
+        return customerToCustomerDto(existingCustomer);
     }
 }
